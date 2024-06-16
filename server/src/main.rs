@@ -11,10 +11,10 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenv::dotenv;
 use log::info;
-use models::{Delivery, NewDelivery, NewStock, Stock};
+use models::{Delivery, NewDelivery, NewSale, NewStock, Stock, WasteManagement};
 use schema::deliveries::dsl::*;
 use schema::stock::dsl::*;
-use schema::{deliveries, stock};
+use schema::{deliveries, sales, stock};
 use std::env;
 
 type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -116,13 +116,46 @@ async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
 }
 
 #[post("/sales")]
-async fn process_sale() -> impl Responder {
-    "Sale processed"
-}
+async fn process_sale(pool: web::Data<DbPool>, mut sale: web::Json<NewSale>) -> impl Responder {
+    let mut conn = pool.get().unwrap();
 
-#[post("/stock-take")]
-async fn take_stock() -> impl Responder {
-    "Stock taken"
+    let now: DateTime<Utc> = Utc::now();
+    sale.sold_at = now.to_rfc3339();
+    info!("New sale: {:?}", sale);
+
+    // Insert the sale record
+    diesel::insert_into(sales::table)
+        .values(&*sale)
+        .execute(&mut conn)
+        .expect("Error inserting new sale");
+
+    // Check if the item exists in stock
+    let existing_stock = stock::table
+        .filter(stock::item_name.eq(&sale.item_name))
+        .first::<Stock>(&mut conn)
+        .optional()
+        .expect("Error querying stock");
+
+    if let Some(mut existing) = existing_stock {
+        // Deduct the stock quantity if the item exists
+        existing.quantity -= sale.quantity;
+        if existing.quantity < 0 {
+            return HttpResponse::BadRequest().body("Insufficient stock");
+        }
+        diesel::update(stock::table.filter(stock::id.eq(existing.id)))
+            .set(stock::quantity.eq(existing.quantity))
+            .execute(&mut conn)
+            .expect("Error updating stock");
+    } else {
+        return HttpResponse::BadRequest().body("Item not found in stock");
+    }
+
+    let response = StandardResponse {
+        status: "success".to_string(),
+        data: Some(sale.into_inner()),
+    };
+
+    HttpResponse::Ok().json(response)
 }
 
 #[post("/reports")]
@@ -130,13 +163,41 @@ async fn pull_reports() -> impl Responder {
     "Report generated"
 }
 
-#[post("/waste-management")]
-async fn waste_management() -> impl Responder {
-    "Waste management"
-}
+async fn waste_management(
+    pool: web::Data<DbPool>,
+    waste: web::Json<WasteManagement>,
+) -> impl Responder {
+    let mut conn = pool.get().expect("couldn't get db connection from pool");
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+    info!("Waste management: {:?}", waste);
+
+    // Check if the item exists in stock
+    let existing_stock = stock::table
+        .filter(stock::item_name.eq(&waste.item_name))
+        .first::<Stock>(&mut conn)
+        .optional()
+        .expect("Error querying stock");
+
+    if let Some(mut existing) = existing_stock {
+        // Deduct the wasted quantity from the stock if the item exists
+        existing.quantity -= waste.quantity;
+        if existing.quantity < 0 {
+            return HttpResponse::BadRequest().body("Insufficient stock to remove waste");
+        }
+        diesel::update(stock::table.filter(stock::id.eq(existing.id)))
+            .set(stock::quantity.eq(existing.quantity))
+            .execute(&mut conn)
+            .expect("Error updating stock");
+    } else {
+        return HttpResponse::BadRequest().body("Item not found in stock");
+    }
+
+    let response = StandardResponse {
+        status: "success".to_string(),
+        data: Some(waste.into_inner()),
+    };
+
+    HttpResponse::Ok().json(response)
 }
 
 #[actix_web::main]
@@ -161,9 +222,7 @@ async fn main() -> std::io::Result<()> {
             .service(accept_delivery)
             .service(get_delivery_history)
             .service(process_sale)
-            .service(take_stock)
             .app_data(waste_management)
-            .route("/hey", web::get().to(manual_hello))
     })
     .bind("0.0.0.0:8080")?
     .run()

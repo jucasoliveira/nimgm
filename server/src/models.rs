@@ -30,12 +30,12 @@ pub struct Sale {
     pub sold_at: String,
 }
 
-#[derive(Insertable, Serialize, Deserialize)]
+#[derive(Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = sales)]
-pub struct NewSale<'a> {
-    pub item_name: &'a str,
+pub struct NewSale {
+    pub item_name: String,
     pub quantity: i32,
-    pub sold_at: &'a str,
+    pub sold_at: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Queryable, AsChangeset)]
@@ -68,4 +68,10 @@ pub struct User {
 pub struct NewUser<'a> {
     pub name: &'a str,
     pub surname: &'a str,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WasteManagement {
+    pub item_name: String,
+    pub quantity: i32,
 }
