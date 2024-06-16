@@ -1,6 +1,16 @@
 import Layout from "@/components/Layout";
+import { useToast } from "@/components/ui/use-toast";
+import useFetch from "@/hooks/useFetch";
 
 function App() {
+  const { toast } = useToast();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const {
+    data: result,
+    error,
+    loading,
+  } = useFetch<StandardResponse>(`http://localhost:8080/get-stock`);
+
   return (
     <>
       <Layout>

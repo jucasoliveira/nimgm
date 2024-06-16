@@ -25,17 +25,13 @@ import { Calendar } from "@/components/ui/calendar";
 import useLazyFetch from "@/hooks/useLazyFetch";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
+import { ToastAction } from "@/components/ui/toast";
 
 const formSchema = z.object({
   item_name: z.string().min(2).max(50),
   quantity: z.number().min(1),
   delivered_at: z.date(),
 });
-
-interface Response {
-  data: any;
-  status: number;
-}
 
 export function FormPage() {
   const { toast } = useToast();
@@ -53,11 +49,11 @@ export function FormPage() {
     data: saveResponse,
     error: saveError,
     loading: saveLoading,
-    execute: saveCountryInfo,
-  } = useLazyFetch<Response>();
+    execute: saveDeliveryInfo,
+  } = useLazyFetch<StandardResponse>();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await saveCountryInfo(`http://localhost:8080/deliveries`, {
+    await saveDeliveryInfo(`http://localhost:8080/deliveries`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,11 +63,12 @@ export function FormPage() {
   };
 
   useEffect(() => {
-    console.log(saveResponse, saveError);
     if (saveResponse) {
       toast({
         title: "Info saved!!!",
+        variant: "default",
         description: "Nice one!!",
+        action: <ToastAction altText="Close">Close</ToastAction>,
       });
       form.reset();
     }
@@ -80,6 +77,8 @@ export function FormPage() {
       toast({
         title: "Error",
         description: saveError,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
       });
     }
   }, [saveResponse, saveError, toast, form]);
