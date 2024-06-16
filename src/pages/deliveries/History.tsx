@@ -13,13 +13,14 @@ import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 
-export function History() {
+export function History({ update, setUpdate }: any) {
   const { toast } = useToast();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {
     data: result,
     error,
     loading,
+    refetch,
   } = useFetch<StandardResponse>(`http://localhost:8080/delivery-history`);
 
   useEffect(() => {
@@ -31,6 +32,13 @@ export function History() {
         action: <ToastAction altText="Close">Close</ToastAction>,
       });
   }, [error]);
+
+  useEffect(() => {
+    if (update) {
+      refetch();
+      setUpdate(false);
+    }
+  }, [update]);
 
   return (
     <Card className="col-span-3">

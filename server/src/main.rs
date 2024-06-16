@@ -216,6 +216,7 @@ async fn pull_reports() -> impl Responder {
     "Report generated"
 }
 
+#[post("/waste")]
 async fn waste_management(
     pool: web::Data<DbPool>,
     waste: web::Json<WasteManagement>,
@@ -232,11 +233,21 @@ async fn waste_management(
         .expect("Error querying stock");
 
     if let Some(mut existing) = existing_stock {
-        // Deduct the wasted quantity from the stock if the item exists
-        existing.quantity -= waste.quantity;
-        if existing.quantity < 0 {
-            return HttpResponse::BadRequest().body("Insufficient stock to remove waste");
+        match waste.action.as_str() {
+            "add" => {
+                existing.quantity += waste.quantity;
+            }
+            "remove" => {
+                if existing.quantity < waste.quantity {
+                    return HttpResponse::BadRequest().body("Insufficient stock to remove waste");
+                }
+                existing.quantity -= waste.quantity;
+            }
+            _ => {
+                return HttpResponse::BadRequest().body("Invalid action");
+            }
         }
+
         diesel::update(stock::table.filter(stock::id.eq(existing.id)))
             .set(stock::quantity.eq(existing.quantity))
             .execute(&mut conn)
@@ -282,7 +293,7 @@ async fn main() -> std::io::Result<()> {
             .service(accept_delivery)
             .service(get_delivery_history)
             .service(process_sale)
-            .app_data(waste_management)
+            .service(waste_management)
     })
     .bind("0.0.0.0:8080")?
     .run()

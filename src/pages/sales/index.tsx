@@ -78,7 +78,6 @@ function Sales() {
   };
 
   useEffect(() => {
-    console.log(saveError, saveResponse);
     saveError &&
       toast({
         title: "Error",
@@ -87,13 +86,17 @@ function Sales() {
         action: <ToastAction altText="Close">Close</ToastAction>,
       });
 
-    saveResponse &&
+    if (saveResponse) {
       toast({
         title: "Success",
         description: "Sales made successfully",
         variant: "default",
         action: <ToastAction altText="Close">Close</ToastAction>,
       });
+
+      setValue([]);
+      setStep(0);
+    }
   }, [saveError, saveResponse, toast]);
 
   useEffect(() => {
