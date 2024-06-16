@@ -23,6 +23,7 @@ const useLazyFetch = <T,>(): FetchState<T> => {
       const data: T = await response.json();
       setData(data);
     } catch (error: any) {
+      console.log(error);
       setError(error.message);
     } finally {
       setLoading(false);

@@ -17,6 +17,7 @@ use models::{Delivery, NewDelivery, NewSale, NewStock, Stock, WasteManagement};
 use schema::deliveries::dsl::*;
 use schema::stock::dsl::*;
 use schema::{deliveries, sales, stock};
+use serde_json::json;
 use std::env;
 
 type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
@@ -151,46 +152,63 @@ async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
 }
 
 #[post("/sales")]
-async fn process_sale(pool: web::Data<DbPool>, mut sale: web::Json<NewSale>) -> impl Responder {
-    let mut conn = pool.get().unwrap();
+async fn process_sale(pool: web::Data<DbPool>, sales: web::Json<Vec<NewSale>>) -> impl Responder {
+    let conn = &mut pool.get().expect("couldn't get db connection from pool");
 
-    let now: DateTime<Utc> = Utc::now();
-    sale.sold_at = now.to_rfc3339();
-    info!("New sale: {:?}", sale);
+    match conn.transaction::<_, diesel::result::Error, _>(|conn| {
+        info!("New sales: {:?}", sales);
 
-    // Insert the sale record
-    diesel::insert_into(sales::table)
-        .values(&*sale)
-        .execute(&mut conn)
-        .expect("Error inserting new sale");
+        let now: DateTime<Utc> = Utc::now();
+        let mut updated_sales = Vec::new();
 
-    // Check if the item exists in stock
-    let existing_stock = stock::table
-        .filter(stock::item_name.eq(&sale.item_name))
-        .first::<Stock>(&mut conn)
-        .optional()
-        .expect("Error querying stock");
+        for mut sale in sales.into_inner() {
+            // Set the sold_at timestamp
+            sale.sold_at = now.to_rfc3339();
 
-    if let Some(mut existing) = existing_stock {
-        // Deduct the stock quantity if the item exists
-        existing.quantity -= sale.quantity;
-        if existing.quantity < 0 {
-            return HttpResponse::BadRequest().body("Insufficient stock");
+            // Check if the item exists in stock
+            let existing_stock = stock::table
+                .filter(stock::item_name.eq(&sale.item_name))
+                .first::<Stock>(conn)
+                .optional()?;
+
+            if let Some(mut existing) = existing_stock {
+                // Deduct the stock quantity if the item exists
+                if existing.quantity < sale.quantity {
+                    return Err(diesel::result::Error::RollbackTransaction);
+                }
+                existing.quantity -= sale.quantity;
+                diesel::update(stock::table.filter(stock::id.eq(existing.id)))
+                    .set(stock::quantity.eq(existing.quantity))
+                    .execute(conn)?;
+            } else {
+                return Err(diesel::result::Error::RollbackTransaction);
+            }
+
+            // Insert the sale record
+            diesel::insert_into(sales::table)
+                .values(&sale)
+                .execute(conn)?;
+
+            updated_sales.push(sale);
         }
-        diesel::update(stock::table.filter(stock::id.eq(existing.id)))
-            .set(stock::quantity.eq(existing.quantity))
-            .execute(&mut conn)
-            .expect("Error updating stock");
-    } else {
-        return HttpResponse::BadRequest().body("Item not found in stock");
+
+        Ok(updated_sales)
+    }) {
+        Ok(updated_sales) => {
+            let response = StandardResponse {
+                status: "success".to_string(),
+                data: Some(updated_sales),
+            };
+            HttpResponse::Ok().json(response)
+        }
+        Err(_) => {
+            let error_response = json!({
+                "status": "error",
+                "message": "Error processing sales, please check stock levels"
+            });
+            HttpResponse::BadRequest().json(error_response)
+        }
     }
-
-    let response = StandardResponse {
-        status: "success".to_string(),
-        data: Some(sale.into_inner()),
-    };
-
-    HttpResponse::Ok().json(response)
 }
 
 #[post("/reports")]

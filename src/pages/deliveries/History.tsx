@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
   CardContent,
@@ -9,16 +9,28 @@ import {
 import useFetch from "@/hooks/useFetch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 export function History() {
+  const { toast } = useToast();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {
     data: result,
     error,
     loading,
-  } = useFetch<any>(`http://localhost:8080/delivery-history`);
+  } = useFetch<StandardResponse>(`http://localhost:8080/delivery-history`);
 
-  console.log(result);
+  useEffect(() => {
+    error &&
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+  }, [error]);
 
   return (
     <Card className="col-span-3">
@@ -31,8 +43,8 @@ export function History() {
           {!loading &&
             result &&
             result.data?.map((value: any, index: number) => (
-              <div>
-                <div className="flex items-center" key={index}>
+              <div key={index}>
+                <div className="flex items-center">
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">
                       {value.item_name}
