@@ -1,0 +1,23 @@
+# Backend Dockerfile
+
+# Stage 1: Build the Rust application
+FROM rust:1.79.0-slim as builder
+WORKDIR /app
+COPY . .
+
+RUN rm -f Cargo.lock
+
+RUN cargo build --release
+
+# Stage 2: Create the final image
+# Use the same base image to ensure compatibility
+FROM rust:1.79.0-slim
+WORKDIR /app
+COPY --from=builder /app/target/release/server /usr/local/bin/server
+
+# Ensure required dependencies are installed
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install libpq-dev
+
+CMD ["server"]
