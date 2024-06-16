@@ -1,0 +1,2 @@
+# nimgm
+Inventroy Management
