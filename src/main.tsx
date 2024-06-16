@@ -9,7 +9,7 @@ import { Suspense } from "react";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<p></p>}>
       <RouterProvider router={router} />
     </Suspense>
   </React.StrictMode>

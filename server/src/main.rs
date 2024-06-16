@@ -1,12 +1,14 @@
 #[macro_use]
 extern crate diesel;
 
+use actix_cors::Cors;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
 mod models;
 mod schema;
 
 use chrono::prelude::*;
+use chrono::Datelike;
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenv::dotenv;
@@ -47,12 +49,9 @@ async fn get_stock(pool: web::Data<DbPool>) -> impl Responder {
 #[post("/deliveries")]
 async fn accept_delivery(
     pool: web::Data<DbPool>,
-    mut delivery: web::Json<NewDelivery>,
+    delivery: web::Json<NewDelivery>,
 ) -> impl Responder {
     let mut conn = pool.get().expect("couldn't get db connection from pool");
-
-    let now: DateTime<Utc> = Utc::now();
-    delivery.delivered_at = now.to_rfc3339();
 
     info!("New delivery: {:?}", delivery);
 
@@ -101,7 +100,43 @@ async fn accept_delivery(
 async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
     let mut conn = pool.get().unwrap();
 
+    let now = Utc::now();
+    let start_of_month = now
+        .with_day(1)
+        .unwrap()
+        .with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap();
+    let end_of_month = if now.month() == 12 {
+        (now + chrono::Duration::days(1))
+            .with_month(1)
+            .unwrap()
+            .with_day(1)
+            .unwrap()
+            .with_hour(0)
+            .unwrap()
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
+            .unwrap()
+    } else {
+        (now.with_month(now.month() + 1)
+            .unwrap()
+            .with_day(1)
+            .unwrap()
+            .with_hour(0)
+            .unwrap()
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
+            .unwrap())
+    };
     let results = deliveries
+        .filter(delivered_at.ge(start_of_month.to_rfc3339()))
+        .filter(delivered_at.lt(end_of_month.to_rfc3339()))
         .load::<Delivery>(&mut conn)
         .expect("Error loading stock");
 
@@ -218,6 +253,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+                    .max_age(3600),
+            )
             .service(get_stock)
             .service(accept_delivery)
             .service(get_delivery_history)
