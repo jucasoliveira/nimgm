@@ -1,37 +1,40 @@
-import { useState } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
+import TeamSwitcher from "@/components/team-switcher";
+import { MainNav } from "@/components/main-nav";
+import { Search } from "@/components/search";
+import { UserNav } from "@/components/user-nave";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="max-w-[1280px] m-auto p-[2rem] text-center">
-      <div className="flex justify-center ">
-        <a href="https://vitejs.dev" target="_blank" className="">
-          <img src={viteLogo} className="h-[6em] p-[1.5em]" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" className="animate-spin">
-          <img
-            src={reactLogo}
-            className="h-[6em]  p-[1.5em]"
-            alt="React logo"
-          />
-        </a>
+    <>
+      <div className="md:hidden">
+        <img
+          src="/examples/dashboard-light.png"
+          width={1280}
+          height={866}
+          alt="Dashboard"
+          className="block dark:hidden"
+        />
+        <img
+          src="/examples/dashboard-dark.png"
+          width={1280}
+          height={866}
+          alt="Dashboard"
+          className="hidden dark:block"
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="p-[2rem]">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="hidden flex-col md:flex">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <TeamSwitcher />
+            <MainNav className="mx-6" />
+            <div className="ml-auto flex items-center space-x-4">
+              <Search />
+              <UserNav />
+            </div>
+          </div>
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    </>
   );
 }
 
