@@ -44,9 +44,9 @@ https://github.com/jucasoliveira/nimgm/assets/11979969/f27e76b2-a47c-4d1b-b701-6
 
    - **Navigation**: Implemented a route system that mimic nextjs `pages` route.
      - pages \
-             - index.tsx
-             - deliveries \
-               - index.tsx
+       - index.tsx
+       - deliveries \
+          - index.tsx
 
    - Each index.tsx represents a page route:
      - `pages/idex.tsx === /`
