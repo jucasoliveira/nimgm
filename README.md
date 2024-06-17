@@ -42,7 +42,15 @@ https://github.com/jucasoliveira/nimgm/assets/11979969/08fcfb28-7b76-4aae-b84f-9
 https://github.com/jucasoliveira/nimgm/assets/11979969/f27e76b2-a47c-4d1b-b701-6fe75c54a680
 
 
-   - **Navigation**: Implement basic navigation between these pages.
+   - **Navigation**: Implemented a route system that mimic nextjs `pages` route.
+     - pages \
+             - index.tsx
+             - deliveries \
+               - index.tsx
+
+   - Each index.tsx represents a page route:
+     - `pages/idex.tsx === /`
+     - `pages/deliveries/index.tsx === /deliveries`
 
 3. **Backend Integration**:
    - **API Endpoints**: Create RESTful API endpoints for deliveries, sales, and stock.
