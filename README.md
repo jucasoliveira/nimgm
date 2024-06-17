@@ -18,16 +18,16 @@
 
 1. **Basic CRUD Operations**:
 
-   - Implementation: Rust is my daily driver for projects, making it a natural choice for the backend. It has a lib called Diesel which can integrate fairly easy with SQLite. I've used Actix-web , which is one of the fastest libraries for http requests on the market, allowing the back end to respond in a fast rate.
+Implementation: Rust is my daily driver for projects, making it a natural choice for the backend. It has a lib called Diesel which can integrate fairly easy with SQLite. I've used Actix-web , which is one of the fastest libraries for http requests on the market, allowing the back end to respond in a fast rate.
 
    - **Deliveries**: Implement backend API to accept deliveries and update inventory.
    - **Sales**: Implement backend API to process sales and update inventory.
    - **Stock**: Implement backend API to take stock and reconcile inventory.
    - **Database Setup**: Ensure SQLite database schema is set up with the necessary tables (deliveries, sales, stock).
 
-3. **Frontend Basic Pages and Forms**:
+2. **Frontend Basic Pages and Forms**:
 
-   - Implementation: Utilized hooks for seamless backend requests and integrated Tailwind CSS and ShadCN for fast prototyping.
+Implementation: Utilized hooks for seamless backend requests and integrated Tailwind CSS and ShadCN for fast prototyping.
 
    - **Deliveries Page**: Create a basic form to record new deliveries.
 
