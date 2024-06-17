@@ -1,8 +1,10 @@
 import Layout from "@/components/Layout";
 import { FormPage } from "./Form";
 import { History } from "./History";
+import { useState } from "react";
 
 function App() {
+  const [update, setUpdate] = useState(false);
   return (
     <>
       <Layout>
@@ -18,10 +20,10 @@ function App() {
         </div>
         <div className="flex p-8 space-x-4 justify-between">
           <div className="w-2/3">
-            <FormPage />
+            <FormPage setUpdate={setUpdate} />
           </div>
           <div className="w-1/3">
-            <History />
+            <History update={update} setUpdate={setUpdate} />
           </div>
         </div>
       </Layout>

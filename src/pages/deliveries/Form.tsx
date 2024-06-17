@@ -33,7 +33,7 @@ const formSchema = z.object({
   delivered_at: z.date(),
 });
 
-export function FormPage() {
+export function FormPage({ setUpdate }: any) {
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -71,6 +71,7 @@ export function FormPage() {
         action: <ToastAction altText="Close">Close</ToastAction>,
       });
       form.reset();
+      setUpdate(true);
     }
 
     if (saveError) {

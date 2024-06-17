@@ -1,45 +1,76 @@
 # Storage Management Application
 
-The application has the chosen stack:
+## Stack Overview
 
-- Vite on the front end
-- Rust on the back end
-- SqLite as the database
-- Docker to deploy the application
+- **Frontend**: Vite
+- **Backend**: Rust
+- **Database**: SQLite
+- **Deployment**: Docker
 
-Reasoning on why I've chose this stack:
+### Technology Choices
 
-- **Vite for Fast and Modern Frontend**: Vite.js ensures a responsive, user-friendly interface with quick development cycles.
-- **Rust for Efficient and Safe Backend**: Rust provides the performance and reliability needed for inventory management and sales processing.
-- **SQLite for Simple and Portable Database**: SQLite offers a lightweight, zero-configuration database solution ideal for local use.
-- **Docker for Consistent and Easy Deployment**: Docker ensures your application is easily deployable and consistent across all store locations.
+- **Vite for Fast and Modern Frontend**: Ensures a responsive, user-friendly interface with quick development cycles.
+- **Rust for Efficient and Safe Backend**: Provides the performance and reliability needed for inventory management and sales processing.
+- **SQLite for Simple and Portable Database**: A lightweight, zero-configuration database solution ideal for local use.
+- **Docker for Consistent and Easy Deployment**: Ensures your application is easily deployable and consistent across all store locations.
 
-### Immediate Priorities (Next 3-4 hours):
+## Immediate Priorities (3-4 hours)
 
 1. **Basic CRUD Operations**:
 
-   - **Deliveries**: Implement the backend API to accept deliveries and update inventory.
-   - **Sales**: Implement the backend API to process sales and update inventory.
-   - **Stock**: Implement the backend API to take stock and reconcile inventory.
+   - **Deliveries**: Implement backend API to accept deliveries and update inventory.
+   - **Sales**: Implement backend API to process sales and update inventory.
+   - **Stock**: Implement backend API to take stock and reconcile inventory.
    - **Database Setup**: Ensure SQLite database schema is set up with the necessary tables (deliveries, sales, stock).
 
-1. **Frontend Basic Pages and Forms**:
+2. **Frontend Basic Pages and Forms**:
 
    - **Deliveries Page**: Create a basic form to record new deliveries.
    - **Sales Page**: Create a basic form to process sales.
    - **Stock Page**: Create a basic form to take stock.
    - **Navigation**: Implement basic navigation between these pages.
 
-1. **Backend Integration**:
-
+3. **Backend Integration**:
    - **API Endpoints**: Create RESTful API endpoints for deliveries, sales, and stock.
-   - **Database Integration**: Ensure that the backend is correctly interacting with the SQLite database.
+   - **Database Integration**: Ensure that the backend interacts correctly with the SQLite database.
 
-### Future work
+## Future Work
 
-1. **Add menu integration**:
+1. **Menu Integration**:
 
-   - **Allow Menu Creation** : On that way, users will be able to add the items and quantities used on each
+   - Allow users to create menus and specify the items and quantities used per menu item.
 
-2. **Improved waste management**:
-3.
+2. **Improved Waste Management**:
+   - Enhance waste management features to allow for better tracking and management of waste.
+
+## How to Run
+
+### Using Docker
+
+1. **Docker Compose**: Use Docker Compose to deploy the application.
+
+   ```bash
+   docker-compose up
+   ```
+
+2. **Docker Desktop**: Use Docker Desktop to deploy the application.
+   ```bash
+   docker compose up
+   ```
+
+### Running Locally
+
+1. **Client**: Install dependencies and run the development server.
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+   Vite usually starts on port `5173`.
+
+2. **Server**:
+   ```bash
+   cd server
+   cargo run
+   ```

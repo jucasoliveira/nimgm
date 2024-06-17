@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface FetchState<T> {
   data: T | null;
   error: string | null;
   loading: boolean;
+  refetch: () => void;
 }
 
 const useFetch = <T,>(url: string): FetchState<T> => {
@@ -12,27 +13,27 @@ const useFetch = <T,>(url: string): FetchState<T> => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        const data: T = await response.json();
-        setData(data);
-      } catch (error: any) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
       }
-    };
-
-    fetchData();
+      const data: T = await response.json();
+      setData(data);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }, [url]);
 
-  return { data, error, loading };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, error, loading, refetch: fetchData };
 };
 
 export default useFetch;

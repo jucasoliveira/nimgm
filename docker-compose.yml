@@ -11,6 +11,10 @@ services:
       - "8080:8080"
     volumes:
       - ./data:/app/data
+    depends_on:
+      - sqlite
+    environment:
+      DATABASE_URL: "sqlite:///app/data/db.sqlite"
 
   sqlite:
     image: nouchka/sqlite3

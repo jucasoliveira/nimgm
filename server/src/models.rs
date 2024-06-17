@@ -74,4 +74,5 @@ pub struct NewUser<'a> {
 pub struct WasteManagement {
     pub item_name: String,
     pub quantity: i32,
+    pub action: String, // "add" or "remove"
 }

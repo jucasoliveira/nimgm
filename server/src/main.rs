@@ -7,6 +7,7 @@ use serde::Serialize;
 mod models;
 mod schema;
 
+use actix_web::web::Data;
 use chrono::prelude::*;
 use chrono::Datelike;
 use diesel::prelude::*;
@@ -15,6 +16,7 @@ use dotenv::dotenv;
 use log::info;
 use models::{Delivery, NewDelivery, NewSale, NewStock, Stock, WasteManagement};
 use schema::deliveries::dsl::*;
+use schema::sales::dsl::*;
 use schema::stock::dsl::*;
 use schema::{deliveries, sales, stock};
 use serde_json::json;
@@ -124,7 +126,7 @@ async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
             .with_second(0)
             .unwrap()
     } else {
-        (now.with_month(now.month() + 1)
+        now.with_month(now.month() + 1)
             .unwrap()
             .with_day(1)
             .unwrap()
@@ -133,7 +135,7 @@ async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
             .with_minute(0)
             .unwrap()
             .with_second(0)
-            .unwrap())
+            .unwrap()
     };
     let results = deliveries
         .filter(delivered_at.ge(start_of_month.to_rfc3339()))
@@ -152,7 +154,7 @@ async fn get_delivery_history(pool: web::Data<DbPool>) -> impl Responder {
 }
 
 #[post("/sales")]
-async fn process_sale(pool: web::Data<DbPool>, sales: web::Json<Vec<NewSale>>) -> impl Responder {
+async fn process_sale(pool: web::Data<DbPool>, sale: web::Json<Vec<NewSale>>) -> impl Responder {
     let conn = &mut pool.get().expect("couldn't get db connection from pool");
 
     match conn.transaction::<_, diesel::result::Error, _>(|conn| {
@@ -161,7 +163,7 @@ async fn process_sale(pool: web::Data<DbPool>, sales: web::Json<Vec<NewSale>>) -
         let now: DateTime<Utc> = Utc::now();
         let mut updated_sales = Vec::new();
 
-        for mut sale in sales.into_inner() {
+        for mut sale in sale.into_inner() {
             // Set the sold_at timestamp
             sale.sold_at = now.to_rfc3339();
 
@@ -216,6 +218,7 @@ async fn pull_reports() -> impl Responder {
     "Report generated"
 }
 
+#[post("/waste")]
 async fn waste_management(
     pool: web::Data<DbPool>,
     waste: web::Json<WasteManagement>,
@@ -232,11 +235,21 @@ async fn waste_management(
         .expect("Error querying stock");
 
     if let Some(mut existing) = existing_stock {
-        // Deduct the wasted quantity from the stock if the item exists
-        existing.quantity -= waste.quantity;
-        if existing.quantity < 0 {
-            return HttpResponse::BadRequest().body("Insufficient stock to remove waste");
+        match waste.action.as_str() {
+            "add" => {
+                existing.quantity += waste.quantity;
+            }
+            "remove" => {
+                if existing.quantity < waste.quantity {
+                    return HttpResponse::BadRequest().body("Insufficient stock to remove waste");
+                }
+                existing.quantity -= waste.quantity;
+            }
+            _ => {
+                return HttpResponse::BadRequest().body("Invalid action");
+            }
         }
+
         diesel::update(stock::table.filter(stock::id.eq(existing.id)))
             .set(stock::quantity.eq(existing.quantity))
             .execute(&mut conn)
@@ -270,7 +283,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .data(pool.clone())
+            .app_data(Data::new(pool.clone()))
             .wrap(
                 Cors::default()
                     .allow_any_origin()
@@ -282,7 +295,7 @@ async fn main() -> std::io::Result<()> {
             .service(accept_delivery)
             .service(get_delivery_history)
             .service(process_sale)
-            .app_data(waste_management)
+            .service(waste_management)
     })
     .bind("0.0.0.0:8080")?
     .run()
