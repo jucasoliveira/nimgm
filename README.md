@@ -19,13 +19,25 @@
 1. **Basic CRUD Operations**:
 
    - **Deliveries**: Implement backend API to accept deliveries and update inventory.
+
+https://github.com/jucasoliveira/nimgm/assets/11979969/48a73e97-21b1-435d-9643-db30314102bb
+
+
    - **Sales**: Implement backend API to process sales and update inventory.
+
+https://github.com/jucasoliveira/nimgm/assets/11979969/18ab00ac-a077-4985-90a0-62252bbe16f5
+
+
    - **Stock**: Implement backend API to take stock and reconcile inventory.
+
+https://github.com/jucasoliveira/nimgm/assets/11979969/92660294-294a-432f-8ebe-809ccf74439d
+
+
    - **Database Setup**: Ensure SQLite database schema is set up with the necessary tables (deliveries, sales, stock).
 
 2. **Frontend Basic Pages and Forms**:
 
-   - **Deliveries Page**: Create a basic form to record new deliveries.
+   - **Deliveries Page**: Create a basic form to record new deliveries. 
    - **Sales Page**: Create a basic form to process sales.
    - **Stock Page**: Create a basic form to take stock.
    - **Navigation**: Implement basic navigation between these pages.
