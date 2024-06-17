@@ -48,6 +48,8 @@ https://github.com/jucasoliveira/nimgm/assets/11979969/f27e76b2-a47c-4d1b-b701-6
    - **API Endpoints**: Create RESTful API endpoints for deliveries, sales, and stock.
    - **Database Integration**: Ensure that the backend interacts correctly with the SQLite database.
 
+### The application doesn't have location selection for now.
+
 ## Future Work
 
 1. **Menu Integration**:
@@ -56,6 +58,11 @@ https://github.com/jucasoliveira/nimgm/assets/11979969/f27e76b2-a47c-4d1b-b701-6
 
 2. **Improved Waste Management**:
    - Enhance waste management features to allow for better tracking and management of waste.
+
+3. **Location-Specific Data Management**:
+
+   - Since each location has its own menu and inventory needs, future iterations will focus on implementing a mechanism to restrict actions to the recipes and ingredients specific to each location. This ensures that the data is accurate and relevant to each store. Staff will only see and interact with data pertinent to their location, reducing confusion and potential errors.
+   - As of right now this solution runs only locally, so it won't be needed to have a location selection.
 
 ## How to Run
 
