@@ -2,10 +2,10 @@
 
 The application has the chosen stack:
 
-- Vite on the front end
-- Rust on the back end
-- SqLite as the database
-- Docker to deploy the application
+- `Vite` on the front end
+- `Rust` on the back end
+- `SqLite` as the database
+- `Docker` to deploy the application
 
 Reasoning on why I've chose this stack:
 
@@ -14,12 +14,12 @@ Reasoning on why I've chose this stack:
 - **SQLite for Simple and Portable Database**: SQLite offers a lightweight, zero-configuration database solution ideal for local use.
 - **Docker for Consistent and Easy Deployment**: Docker ensures your application is easily deployable and consistent across all store locations.
 
-### Immediate Priorities (Next 3-4 hours):
+### Immediate Priorities (3-4 hours):
 
 1. **Basic CRUD Operations**:
 
    - **Deliveries**: Implement the backend API to accept deliveries and update inventory.
-   - **Sales**: Implement the backend API to process sales and update inventory.
+   - **Sales**: Implement the backend API to process sale of items and update inventory.
    - **Stock**: Implement the backend API to take stock and reconcile inventory.
    - **Database Setup**: Ensure SQLite database schema is set up with the necessary tables (deliveries, sales, stock).
 

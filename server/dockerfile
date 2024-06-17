@@ -5,19 +5,30 @@ FROM rust:1.79.0-slim as builder
 WORKDIR /app
 COPY . .
 
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install libpq-dev libsqlite3-dev gcc
+
 RUN rm -f Cargo.lock
+RUN cargo install diesel_cli --no-default-features --features sqlite
 
 RUN cargo build --release
 
 # Stage 2: Create the final image
-# Use the same base image to ensure compatibility
 FROM rust:1.79.0-slim
-WORKDIR /app
 COPY --from=builder /app/target/release/server /usr/local/bin/server
+COPY --from=builder /app /app
+COPY --from=builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
+
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+WORKDIR /app
 
 # Ensure required dependencies are installed
 RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get -y install libpq-dev
+    apt-get -y install libpq-dev libsqlite3-0
 
-CMD ["server"]
+# Set the environment variable for the database URL
+ENV DATABASE_URL="sqlite:///app/data/db.sqlite"
+
+CMD ["/usr/local/bin/start.sh"]
